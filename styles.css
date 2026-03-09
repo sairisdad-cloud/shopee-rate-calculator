@@ -522,6 +522,22 @@ input[type=number] {
     border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
 }
 
+/* 基準行 (1 JPY) */
+.rate-row-jpy td {
+    border-bottom: 1px dashed var(--border-color);
+}
+
+/* 逆算行 (1 Local) */
+.rate-row-local td {
+    background-color: rgba(253, 240, 237, 0.3); /* very light primary */
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.rate-row-local:hover td {
+    background-color: rgba(253, 240, 237, 0.8) !important;
+}
+
 .rate-table tr:hover td {
     background-color: var(--primary-light);
 }

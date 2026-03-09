@@ -256,13 +256,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const rate = rates[curr];
             if (rate) {
                 const info = currencyInfo[curr];
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
+                
+                // 1. JPY to Local (1 JPY = X Local)
+                const trJpy = document.createElement('tr');
+                trJpy.className = 'rate-row-jpy';
+                trJpy.innerHTML = `
                     <td>${info.flag} ${info.name}</td>
+                    <td>1 JPY</td>
                     <td><b>${curr}</b></td>
                     <td class="text-right">${rate.toFixed(4)}</td>
                 `;
-                elements.rateTableBody.appendChild(tr);
+                elements.rateTableBody.appendChild(trJpy);
+                
+                // 2. Local to JPY (1 Local = X JPY)
+                // Reverse rate (1 / rate)
+                const reverseRate = 1 / rate;
+                const trLocal = document.createElement('tr');
+                trLocal.className = 'rate-row-local';
+                trLocal.innerHTML = `
+                    <td>${info.flag} ${info.name}</td>
+                    <td>1 ${curr}</td>
+                    <td><b>JPY</b></td>
+                    <td class="text-right">${reverseRate.toFixed(2)}</td>
+                `;
+                elements.rateTableBody.appendChild(trLocal);
             }
         });
     }

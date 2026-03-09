@@ -527,6 +527,12 @@ input[type=number] {
     border-bottom: 1px dashed var(--border-color);
 }
 
+.rate-row-jpy td.country-cell {
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+    background-color: #ffffff;
+}
+
 /* 逆算行 (1 Local) */
 .rate-row-local td {
     background-color: rgba(253, 240, 237, 0.3); /* very light primary */

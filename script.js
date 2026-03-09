@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const trJpy = document.createElement('tr');
                 trJpy.className = 'rate-row-jpy';
                 trJpy.innerHTML = `
-                    <td>${info.flag} ${info.name}</td>
+                    <td rowspan="2" class="country-cell">${info.flag} ${info.name}</td>
                     <td>1 JPY</td>
                     <td><b>${curr}</b></td>
                     <td class="text-right">${rate.toFixed(4)}</td>
@@ -274,7 +274,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const trLocal = document.createElement('tr');
                 trLocal.className = 'rate-row-local';
                 trLocal.innerHTML = `
-                    <td>${info.flag} ${info.name}</td>
                     <td>1 ${curr}</td>
                     <td><b>JPY</b></td>
                     <td class="text-right">${reverseRate.toFixed(2)}</td>

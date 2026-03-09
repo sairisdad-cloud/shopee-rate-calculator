@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopee Rate Calculator</title>
+    <meta name="description" content="Shopee販売国向けの日本円・現地通貨のリアルタイム為替レート計算ツール">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-area">
+                    <i class="fa-solid fa-calculator logo-icon"></i>
+                    <h1>Shopee Rate Calculator</h1>
+                </div>
+                <div class="rate-info">
+                    <p id="update-time" class="update-time"><i class="fa-solid fa-clock-rotate-left"></i> レート情報更新中...</p>
+                    <button id="refresh-btn" class="refresh-btn" aria-label="レートを更新" title="最新のレートに更新"><i class="fa-solid fa-arrows-rotate"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <div id="loading-overlay" class="loading-overlay">
+                <div class="spinner"></div>
+                <p>為替レートを取得中...</p>
+            </div>
+            <div id="error-message" class="error-message hidden">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>レート情報の取得に失敗しました。時間をおいて再試行してください。</span>
+            </div>
+
+            <div class="calc-section-container">
+                <!-- Section 1: JPY to Local -->
+                <section class="calc-card primary-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-yen-sign"></i> 日本円から各国通貨へ</h2>
+                        <p>基準となる日本円を入力すると、各国の販売価格目安が計算されます。</p>
+                    </div>
+                    
+                    <div class="input-group main-input">
+                        <label for="jpy-input">日本円 原価・基準額 (JPY)</label>
+                        <div class="input-wrapper">
+                            <span class="currency-symbol">¥</span>
+                            <input type="number" id="jpy-input" placeholder="0" min="0" step="1">
+                        </div>
+                    </div>
+
+                    <!-- Profit Margin Calculator Section -->
+                    <div class="margin-calculator">
+                        <div class="margin-header">
+                            <span><i class="fa-solid fa-tags"></i> 利益率を含めた販売価格目安 (JPY)</span>
+                            <span class="margin-tooltip" title="売価 = 原価 ÷ (1 - 利益率) で計算しています"><i class="fa-regular fa-circle-question"></i></span>
+                        </div>
+                        <div class="margin-grid" id="margin-grid">
+                            <!-- Populated by JS -->
+                            <div class="margin-placeholder">金額を入力すると計算されます</div>
+                        </div>
+                    </div>
+
+                    <div class="results-grid">
+                        <div class="result-item">
+                            <div class="currency-flag">🇸🇬</div>
+                            <div class="currency-details">
+                                <span class="currency-code">SGD</span>
+                                <span class="country-name">シンガポール</span>
+                            </div>
+                            <div class="result-value" id="res-sgd">0.00</div>
+                            <div class="country-margin-grid" id="margin-sgd"></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="currency-flag">🇹🇭</div>
+                            <div class="currency-details">
+                                <span class="currency-code">THB</span>
+                                <span class="country-name">タイ</span>
+                            </div>
+                            <div class="result-value" id="res-thb">0.00</div>
+                            <div class="country-margin-grid" id="margin-thb"></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="currency-flag">🇵🇭</div>
+                            <div class="currency-details">
+                                <span class="currency-code">PHP</span>
+                                <span class="country-name">フィリピン</span>
+                            </div>
+                            <div class="result-value" id="res-php">0.00</div>
+                            <div class="country-margin-grid" id="margin-php"></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="currency-flag">🇲🇾</div>
+                            <div class="currency-details">
+                                <span class="currency-code">MYR</span>
+                                <span class="country-name">マレーシア</span>
+                            </div>
+                            <div class="result-value" id="res-myr">0.00</div>
+                            <div class="country-margin-grid" id="margin-myr"></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="currency-flag">🇻🇳</div>
+                            <div class="currency-details">
+                                <span class="currency-code">VND</span>
+                                <span class="country-name">ベトナム</span>
+                            </div>
+                            <div class="result-value" id="res-vnd">0</div>
+                            <div class="country-margin-grid" id="margin-vnd"></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="currency-flag">🇹🇼</div>
+                            <div class="currency-details">
+                                <span class="currency-code">TWD</span>
+                                <span class="country-name">台湾</span>
+                            </div>
+                            <div class="result-value" id="res-twd">0.00</div>
+                            <div class="country-margin-grid" id="margin-twd"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section 2: Local to JPY -->
+                <section class="calc-card secondary-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-globe"></i> 各国通貨から日本円へ</h2>
+                        <p>各国の販売価格を入力すると、日本円相当額が計算されます。</p>
+                    </div>
+
+                    <div class="local-inputs-list">
+                        <!-- SGD -->
+                        <div class="local-input-item">
+                            <div class="local-input-header">
+                                <span class="currency-flag">🇸🇬</span>
+                                <label for="input-sgd">SGD (シンガポール)</label>
+                            </div>
+                            <div class="input-and-result">
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">$</span>
+                                    <input type="number" id="input-sgd" class="local-curr-input" data-currency="SGD" placeholder="0" min="0" step="0.01">
+                                </div>
+                                <div class="arrow-icon"><i class="fa-solid fa-arrow-right-long"></i></div>
+                                <div class="converted-jpy">
+                                    <span class="jpy-symbol">¥</span><span id="conv-sgd">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- THB -->
+                        <div class="local-input-item">
+                            <div class="local-input-header">
+                                <span class="currency-flag">🇹🇭</span>
+                                <label for="input-thb">THB (タイ)</label>
+                            </div>
+                            <div class="input-and-result">
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">฿</span>
+                                    <input type="number" id="input-thb" class="local-curr-input" data-currency="THB" placeholder="0" min="0" step="0.01">
+                                </div>
+                                <div class="arrow-icon"><i class="fa-solid fa-arrow-right-long"></i></div>
+                                <div class="converted-jpy">
+                                    <span class="jpy-symbol">¥</span><span id="conv-thb">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- PHP -->
+                        <div class="local-input-item">
+                            <div class="local-input-header">
+                                <span class="currency-flag">🇵🇭</span>
+                                <label for="input-php">PHP (フィリピン)</label>
+                            </div>
+                            <div class="input-and-result">
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">₱</span>
+                                    <input type="number" id="input-php" class="local-curr-input" data-currency="PHP" placeholder="0" min="0" step="0.01">
+                                </div>
+                                <div class="arrow-icon"><i class="fa-solid fa-arrow-right-long"></i></div>
+                                <div class="converted-jpy">
+                                    <span class="jpy-symbol">¥</span><span id="conv-php">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- MYR -->
+                        <div class="local-input-item">
+                            <div class="local-input-header">
+                                <span class="currency-flag">🇲🇾</span>
+                                <label for="input-myr">MYR (マレーシア)</label>
+                            </div>
+                            <div class="input-and-result">
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">RM</span>
+                                    <input type="number" id="input-myr" class="local-curr-input" data-currency="MYR" placeholder="0" min="0" step="0.01">
+                                </div>
+                                <div class="arrow-icon"><i class="fa-solid fa-arrow-right-long"></i></div>
+                                <div class="converted-jpy">
+                                    <span class="jpy-symbol">¥</span><span id="conv-myr">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- VND -->
+                        <div class="local-input-item">
+                            <div class="local-input-header">
+                                <span class="currency-flag">🇻🇳</span>
+                                <label for="input-vnd">VND (ベトナム)</label>
+                            </div>
+                            <div class="input-and-result">
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">₫</span>
+                                    <input type="number" id="input-vnd" class="local-curr-input" data-currency="VND" placeholder="0" min="0" step="1">
+                                </div>
+                                <div class="arrow-icon"><i class="fa-solid fa-arrow-right-long"></i></div>
+                                <div class="converted-jpy">
+                                    <span class="jpy-symbol">¥</span><span id="conv-vnd">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- TWD -->
+                        <div class="local-input-item">
+                            <div class="local-input-header">
+                                <span class="currency-flag">🇹🇼</span>
+                                <label for="input-twd">TWD (台湾)</label>
+                            </div>
+                            <div class="input-and-result">
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">NT$</span>
+                                    <input type="number" id="input-twd" class="local-curr-input" data-currency="TWD" placeholder="0" min="0" step="0.01">
+                                </div>
+                                <div class="arrow-icon"><i class="fa-solid fa-arrow-right-long"></i></div>
+                                <div class="converted-jpy">
+                                    <span class="jpy-symbol">¥</span><span id="conv-twd">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <div class="rate-table-section">
+                <h3><i class="fa-solid fa-list"></i> 現在の為替レート一覧 (1 JPY あたり)</h3>
+                <div class="table-container">
+                    <table class="rate-table">
+                        <thead>
+                            <tr>
+                                <th>国</th>
+                                <th>通貨</th>
+                                <th class="text-right">レート</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rate-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="app-footer">
+            <p>Exchange rates provided by <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">ExchangeRate-API</a></p>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

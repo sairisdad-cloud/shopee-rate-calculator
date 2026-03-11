@@ -88,18 +88,18 @@
                                     <span class="currency-symbol">¥</span>
                                     <input type="number" id="customs-fee-input" class="base-cost-input" placeholder="0" min="0" step="1">
                                 </div>
-                                <div class="customs-estimator">
-                                    <div class="estimator-header">
-                                        <i class="fa-solid fa-shield-halved"></i> 最悪想定の関税・税金を自動入力
-                                    </div>
-                                    <div class="estimator-buttons">
-                                        <button type="button" class="est-btn" data-country="SGD" title="免税枠 400 SGD / 最悪16%">🇸🇬 SG</button>
-                                        <button type="button" class="est-btn" data-country="THB" title="免税枠 1,500 THB / 最悪27%">🇹🇭 TH</button>
-                                        <button type="button" class="est-btn" data-country="PHP" title="免税枠 10,000 PHP / 最悪27%">🇵🇭 PH</button>
-                                        <button type="button" class="est-btn" data-country="MYR" title="免税枠 500 MYR / 最悪25%">🇲🇾 MY</button>
-                                        <button type="button" class="est-btn" data-country="VND" title="免税枠 1,000,000 VND / 最悪30%">🇻🇳 VN</button>
-                                        <button type="button" class="est-btn" data-country="TWD" title="免税枠 2,000 TWD / 最悪15%">🇹🇼 TW</button>
-                                    </div>
+                            </div>
+                            <div class="customs-estimator">
+                                <div class="estimator-header">
+                                    <i class="fa-solid fa-shield-halved"></i> 最悪想定の関税・税額を自動計算
+                                </div>
+                                <div class="estimator-buttons">
+                                    <button type="button" class="est-btn" data-country="SGD" title="免税枠 400 SGD / 最悪16%"><span class="flag">🇸🇬</span>SG</button>
+                                    <button type="button" class="est-btn" data-country="MYR" title="免税枠 500 MYR / 最悪25%"><span class="flag">🇲🇾</span>MY</button>
+                                    <button type="button" class="est-btn" data-country="THB" title="免税枠 1,500 THB / 最悪27%"><span class="flag">🇹🇭</span>TH</button>
+                                    <button type="button" class="est-btn" data-country="TWD" title="免税枠 2,000 TWD / 最悪15%"><span class="flag">🇹🇼</span>TW</button>
+                                    <button type="button" class="est-btn" data-country="PHP" title="免税枠 10,000 PHP / 最悪27%"><span class="flag">🇵🇭</span>PH</button>
+                                    <button type="button" class="est-btn" data-country="VND" title="免税枠 1,000,000 VND / 最悪30%"><span class="flag">🇻🇳</span>VN</button>
                                 </div>
                             </div>
                         </div>
@@ -109,7 +109,7 @@
                     <div class="margin-calculator">
                         <div class="margin-header">
                             <span><i class="fa-solid fa-tags"></i> 真の損益分岐点・目標利益ベース売価 (JPY)</span>
-                            <span class="margin-tooltip" title="売価 = (実質総原価 ＋ 実質総原価 × 利益率) ÷ (1 - 各国手数料率)。上の大きな数字は利益0%、つまり完全な損益分岐点（1円も赤字にならない最低販売額）です。"><i class="fa-regular fa-circle-question"></i></span>
+                            <span class="margin-tooltip" title="売価 = (実質総原価 ＋ 実質総原価 × 利益率) ÷ (1 - 各国手数料率 - Payoneer為替2%)。上の大きな数字は利益0%、つまり完全な損益分岐点（日本の口座に着金する最低販売額）です。"><i class="fa-regular fa-circle-question"></i></span>
                         </div>
                         <div class="margin-grid" id="margin-grid">
                             <!-- Populated by JS -->

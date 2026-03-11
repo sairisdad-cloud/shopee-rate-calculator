@@ -353,24 +353,36 @@ input[type=number] {
 }
 
 .estimator-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+}
+
+@media (min-width: 480px) {
+    .estimator-buttons {
+        grid-template-columns: repeat(6, 1fr);
+    }
 }
 
 .est-btn {
     background: #ffffff;
     border: 1px solid #fbcfe8;
     color: #9d174d;
-    padding: 0.35rem 0.6rem;
+    padding: 0.4rem 0.2rem;
     border-radius: 4px;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
-    flex: 1;
-    min-width: calc(33.333% - 0.5rem);
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+}
+
+.est-btn .flag {
+    font-size: 0.9rem;
 }
 
 .est-btn:hover {
@@ -382,13 +394,6 @@ input[type=number] {
 
 .est-btn:active {
     transform: translateY(0);
-}
-
-@media (min-width: 640px) {
-    .est-btn {
-        min-width: auto;
-        flex: none;
-    }
 }
 
 /* Margin Calculator */

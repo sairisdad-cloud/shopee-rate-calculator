@@ -314,14 +314,37 @@ document.addEventListener('DOMContentLoaded', () => {
         TARGET_CURRENCIES.forEach(curr => {
             const rate = rates[curr];
             const fee = shopeeFees[curr];
-            const totalFeeDec = fee.commission + fee.transaction;
+            const totalFeeDec = fee.commission + fee.transaction + 0.02; // Adding 2% Payoneer fee
 
             if (rate) {
                 // Base Result with NO Margin (just fees considered for "0% margin" selling price)
                 // If they want 0% margin, Price = Cost / (1 - TotalFee)
                 const baseJpyPrice = jpy / (1 - totalFeeDec);
                 const baseLocalPrice = baseJpyPrice * rate;
-                elements.results[curr].textContent = formatNumber(baseLocalPrice, currencyInfo[curr].decimals);
+                
+                const info = currencyInfo[curr];
+                const flag = info.flag;
+                const country = info.name;
+                const currency = curr;
+
+                // Determine CSS class based on high fee (e.g. Philippines)
+                let badgeClass = 'fee-badge';
+                if (totalFeeDec > 0.3) {
+                    badgeClass += ' warning';
+                }
+                
+                elements.results[curr].innerHTML = `
+                    <div class="result-card">
+                        <div class="country-name">
+                            <span><span class="flag">${flag}</span> ${currency} (${country}) <span class="${badgeClass}" title="販売+決済手数料+Payoneer為替2%">手数料 ${(totalFeeDec * 100).toFixed(1)}%</span></span>
+                            <span class="rate-info">1 ${currency} = ${(1/rate).toFixed(2)} JPY</span>
+                        </div>
+                        <div class="base-price">
+                            <span class="label">0%利益販売価格:</span>
+                            <span class="value">${formatNumber(baseLocalPrice, currencyInfo[curr].decimals)}</span>
+                        </div>
+                    </div>
+                `;
 
                 let countryMarginHtml = '';
                 for (let pct = 10; pct <= 80; pct += 10) {
@@ -338,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         // Formula:
                         // Cost = jpy
-                        // Profit = Cost * Margin (e.g. 1000 * 10% = 100)
+                        // Profit = Cost * Margin (e.g. 1000 * 100% = 1000)
                         // Fee = Selling Price * FeePercentage
                         // Selling Price = Cost + Profit + Fee -> S = (Cost * (1 + Margin)) / (1 - FeePercentage)
                         const targetJpyPrice = (jpy * (1 + marginDec)) / (1 - totalFeeDec);
@@ -347,7 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const profitAmt = jpy * marginDec;
                         const feeAmt = targetJpyPrice * totalFeeDec;
                         
-                        const jpyTooltip = `日本円: ¥${formatNumber(targetJpyPrice, 0)} (原価¥${formatNumber(jpy,0)} + 利益¥${formatNumber(profitAmt, 0)} + 手数料¥${formatNumber(feeAmt, 0)})`;
+                        const jpyTooltip = `日本円: ¥${formatNumber(targetJpyPrice, 0)} (原価¥${formatNumber(jpy,0)} + 利益¥${formatNumber(profitAmt, 0)} + 手数料・為替含¥${formatNumber(feeAmt, 0)})`;
                         countryMarginHtml += `
                             <div class="country-margin-item" title="${jpyTooltip}">
                                 <span>${pct}%</span>

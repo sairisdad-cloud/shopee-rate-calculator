@@ -43,19 +43,60 @@
                         <p>基準となる日本円を入力すると、各国の販売価格目安が計算されます。</p>
                     </div>
                     
-                    <div class="input-group main-input">
-                        <label for="jpy-input">日本円 原価・基準額 (JPY)</label>
-                        <div class="input-wrapper">
-                            <span class="currency-symbol">¥</span>
-                            <input type="number" id="jpy-input" placeholder="0" min="0" step="1">
+                    <div class="cost-inputs-container">
+                        <div class="cost-header" id="toggle-costs-btn" aria-expanded="true">
+                            <div class="cost-header-title">
+                                <i class="fa-solid fa-box-open"></i> 実質総原価 (仕入れ値 ＋ 各種経費)
+                            </div>
+                            <div class="cost-header-value">
+                                <span id="total-base-cost-display">¥0</span>
+                                <i class="fa-solid fa-chevron-up toggle-icon" id="cost-toggle-icon"></i>
+                            </div>
+                        </div>
+                        <div class="cost-inputs-grid" id="cost-inputs-grid">
+                            <div class="input-group">
+                                <label for="jpy-input"><i class="fa-solid fa-box"></i> 商品原価本体</label>
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">¥</span>
+                                    <input type="number" id="jpy-input" class="base-cost-input" placeholder="0" min="0" step="1">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="domestic-shipping-input"><i class="fa-solid fa-truck-fast"></i> 国内送料</label>
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">¥</span>
+                                    <input type="number" id="domestic-shipping-input" class="base-cost-input" placeholder="0" min="0" step="1">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="intl-shipping-input"><i class="fa-solid fa-plane-departure"></i> 海外送料</label>
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">¥</span>
+                                    <input type="number" id="intl-shipping-input" class="base-cost-input" placeholder="0" min="0" step="1">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="prep-fee-input"><i class="fa-solid fa-clipboard-check"></i> 代行手数料等</label>
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">¥</span>
+                                    <input type="number" id="prep-fee-input" class="base-cost-input" placeholder="0" min="0" step="1">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="customs-fee-input"><i class="fa-solid fa-file-invoice-dollar"></i> 関税・その他</label>
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">¥</span>
+                                    <input type="number" id="customs-fee-input" class="base-cost-input" placeholder="0" min="0" step="1">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Profit Margin Calculator Section -->
                     <div class="margin-calculator">
                         <div class="margin-header">
-                            <span><i class="fa-solid fa-tags"></i> 利益率を含めた販売価格目安 (JPY)</span>
-                            <span class="margin-tooltip" title="売価 = 原価 ÷ (1 - 利益率) で計算しています"><i class="fa-regular fa-circle-question"></i></span>
+                            <span><i class="fa-solid fa-tags"></i> 真の損益分岐点・目標利益ベース売価 (JPY)</span>
+                            <span class="margin-tooltip" title="売価 = (実質総原価 ＋ 実質総原価 × 利益率) ÷ (1 - 各国手数料率)。上の大きな数字は利益0%、つまり完全な損益分岐点（1円も赤字にならない最低販売額）です。"><i class="fa-regular fa-circle-question"></i></span>
                         </div>
                         <div class="margin-grid" id="margin-grid">
                             <!-- Populated by JS -->
@@ -68,7 +109,7 @@
                             <div class="currency-flag">🇸🇬</div>
                             <div class="currency-details">
                                 <span class="currency-code">SGD</span>
-                                <span class="country-name">シンガポール</span>
+                                <span class="country-name">シンガポール <span class="fee-badge">手数料 13%</span></span>
                             </div>
                             <div class="result-value" id="res-sgd">0.00</div>
                             <div class="country-margin-grid" id="margin-sgd"></div>
@@ -77,7 +118,7 @@
                             <div class="currency-flag">🇹🇭</div>
                             <div class="currency-details">
                                 <span class="currency-code">THB</span>
-                                <span class="country-name">タイ</span>
+                                <span class="country-name">タイ <span class="fee-badge">手数料 6.42%</span></span>
                             </div>
                             <div class="result-value" id="res-thb">0.00</div>
                             <div class="country-margin-grid" id="margin-thb"></div>
@@ -86,7 +127,7 @@
                             <div class="currency-flag">🇵🇭</div>
                             <div class="currency-details">
                                 <span class="currency-code">PHP</span>
-                                <span class="country-name">フィリピン</span>
+                                <span class="country-name">フィリピン <span class="fee-badge warning">手数料 35.6%</span></span>
                             </div>
                             <div class="result-value" id="res-php">0.00</div>
                             <div class="country-margin-grid" id="margin-php"></div>
@@ -95,7 +136,7 @@
                             <div class="currency-flag">🇲🇾</div>
                             <div class="currency-details">
                                 <span class="currency-code">MYR</span>
-                                <span class="country-name">マレーシア</span>
+                                <span class="country-name">マレーシア <span class="fee-badge">手数料 14.5%</span></span>
                             </div>
                             <div class="result-value" id="res-myr">0.00</div>
                             <div class="country-margin-grid" id="margin-myr"></div>
@@ -104,7 +145,7 @@
                             <div class="currency-flag">🇻🇳</div>
                             <div class="currency-details">
                                 <span class="currency-code">VND</span>
-                                <span class="country-name">ベトナム</span>
+                                <span class="country-name">ベトナム <span class="fee-badge">手数料 8.3%</span></span>
                             </div>
                             <div class="result-value" id="res-vnd">0</div>
                             <div class="country-margin-grid" id="margin-vnd"></div>
@@ -113,7 +154,7 @@
                             <div class="currency-flag">🇹🇼</div>
                             <div class="currency-details">
                                 <span class="currency-code">TWD</span>
-                                <span class="country-name">台湾</span>
+                                <span class="country-name">台湾 <span class="fee-badge">手数料 7%</span></span>
                             </div>
                             <div class="result-value" id="res-twd">0.00</div>
                             <div class="country-margin-grid" id="margin-twd"></div>

@@ -9,13 +9,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const TARGET_CURRENCIES = ['SGD', 'THB', 'PHP', 'MYR', 'VND', 'TWD'];
     let rates = {}; // JPY to TARGET rates (e.g., 1 JPY = 0.0089 SGD)
 
+    // Shopee Fees (Commission + Transaction)
+    const shopeeFees = {
+        SGD: { commission: 0.11, transaction: 0.02 }, // 13%
+        THB: { commission: 0.0321, transaction: 0.0321 }, // 6.42%
+        PHP: { commission: 0.0336, transaction: 0.3224 }, // 35.6%
+        MYR: { commission: 0.11, transaction: 0.035 }, // 14.5%
+        VND: { commission: 0.033, transaction: 0.05 }, // 8.3%
+        TWD: { commission: 0.05, transaction: 0.02 } // 7%
+    };
+
     // DOM Elements
     const elements = {
         loading: document.getElementById('loading-overlay'),
         errorMsg: document.getElementById('error-message'),
         updateTime: document.getElementById('update-time'),
         refreshBtn: document.getElementById('refresh-btn'),
-        jpyInput: document.getElementById('jpy-input'),
+        
+        // Base Cost Inputs
+        costInputs: document.querySelectorAll('.base-cost-input'),
+        totalBaseCostDisplay: document.getElementById('total-base-cost-display'),
+        costHeader: document.getElementById('toggle-costs-btn'),
+        costGrid: document.getElementById('cost-inputs-grid'),
+        costToggleIcon: document.getElementById('cost-toggle-icon'),
+        
         marginGrid: document.getElementById('margin-grid'),
         rateTableBody: document.getElementById('rate-table-body'),
         // Country margin grids
@@ -69,9 +86,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupEventListeners() {
         elements.refreshBtn.addEventListener('click', () => fetchRatesFromAPI(true));
         
-        // JPY input event
-        elements.jpyInput.addEventListener('input', (e) => {
-            calculateJpyToLocal(e.target.value);
+        // Base cost input events
+        elements.costInputs.forEach(input => {
+            input.addEventListener('input', calculateTotalBaseCost);
+        });
+
+        // Toggle costs accordion
+        elements.costHeader.addEventListener('click', () => {
+            const isExpanded = elements.costHeader.getAttribute('aria-expanded') === 'true';
+            elements.costHeader.setAttribute('aria-expanded', !isExpanded);
+            
+            if (isExpanded) {
+                elements.costGrid.style.display = 'none';
+                elements.costToggleIcon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            } else {
+                elements.costGrid.style.display = 'grid'; // reset to default grid
+                elements.costToggleIcon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+            }
         });
 
         // Local input events
@@ -169,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderRateTable();
         
         // Recalculate if there are existing inputs
-        calculateJpyToLocal(elements.jpyInput.value);
+        calculateTotalBaseCost();
         elements.localInputs.forEach(input => {
             if (input.value) {
                 calculateLocalToJpy(input.dataset.currency, input.value);
@@ -178,6 +209,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // === Calculations ===
+    function calculateTotalBaseCost() {
+        let total = 0;
+        elements.costInputs.forEach(input => {
+            const val = parseFloat(input.value);
+            if (!isNaN(val) && val > 0) {
+                total += val;
+            }
+        });
+        
+        elements.totalBaseCostDisplay.textContent = `¥${formatNumber(total, 0)}`;
+        calculateJpyToLocal(total);
+    }
+
     function calculateJpyToLocal(jpyValue) {
         const jpy = parseFloat(jpyValue);
         
@@ -193,33 +237,59 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Calculate Target Currencies and their Margins ---
         TARGET_CURRENCIES.forEach(curr => {
             const rate = rates[curr];
+            const fee = shopeeFees[curr];
+            const totalFeeDec = fee.commission + fee.transaction;
+
             if (rate) {
-                const result = jpy * rate;
-                elements.results[curr].textContent = formatNumber(result, currencyInfo[curr].decimals);
+                // Base Result with NO Margin (just fees considered for "0% margin" selling price)
+                // If they want 0% margin, Price = Cost / (1 - TotalFee)
+                const baseJpyPrice = jpy / (1 - totalFeeDec);
+                const baseLocalPrice = baseJpyPrice * rate;
+                elements.results[curr].textContent = formatNumber(baseLocalPrice, currencyInfo[curr].decimals);
 
                 let countryMarginHtml = '';
                 for (let pct = 10; pct <= 80; pct += 10) {
                     const marginDec = pct / 100;
-                    const targetJpyPrice = jpy / (1 - marginDec);
-                    const localTargetPrice = targetJpyPrice * rate;
-                    const jpyTooltip = `日本円: ¥${formatNumber(targetJpyPrice, 0)}`;
-                    countryMarginHtml += `
-                        <div class="country-margin-item" title="${jpyTooltip}">
-                            <span>${pct}%</span>
-                            <span class="margin-val tooltip-target">${formatNumber(localTargetPrice, currencyInfo[curr].decimals)}</span>
-                        </div>
-                    `;
+                    
+                    if (totalFeeDec >= 1) {
+                        // Technically impossible if platform takes 100% or more fee
+                        countryMarginHtml += `
+                            <div class="country-margin-item error" title="手数料(${Math.round(totalFeeDec*1000)/10}%)が100%以上の為計算不可">
+                                <span>${pct}%</span>
+                                <span class="margin-val tooltip-target" style="color: #ef4444; font-size: 0.85rem;">計算不可</span>
+                            </div>
+                        `;
+                    } else {
+                        // Formula:
+                        // Cost = jpy
+                        // Profit = Cost * Margin (e.g. 1000 * 10% = 100)
+                        // Fee = Selling Price * FeePercentage
+                        // Selling Price = Cost + Profit + Fee -> S = (Cost * (1 + Margin)) / (1 - FeePercentage)
+                        const targetJpyPrice = (jpy * (1 + marginDec)) / (1 - totalFeeDec);
+                        const localTargetPrice = targetJpyPrice * rate;
+                        
+                        const profitAmt = jpy * marginDec;
+                        const feeAmt = targetJpyPrice * totalFeeDec;
+                        
+                        const jpyTooltip = `日本円: ¥${formatNumber(targetJpyPrice, 0)} (原価¥${formatNumber(jpy,0)} + 利益¥${formatNumber(profitAmt, 0)} + 手数料¥${formatNumber(feeAmt, 0)})`;
+                        countryMarginHtml += `
+                            <div class="country-margin-item" title="${jpyTooltip}">
+                                <span>${pct}%</span>
+                                <span class="margin-val tooltip-target">${formatNumber(localTargetPrice, currencyInfo[curr].decimals)}</span>
+                            </div>
+                        `;
+                    }
                 }
                 elements.countryMargins[curr].innerHTML = countryMarginHtml;
             }
         });
 
         // --- Calculate Profit Margins for JPY (10% to 80%) ---
-        // Formula: Price = Cost / (1 - Margin/100)
+        // Formula without specific country fees
         let marginHtml = '';
         for (let pct = 10; pct <= 80; pct += 10) {
             const marginDec = pct / 100;
-            const targetPrice = jpy / (1 - marginDec);
+            const targetPrice = jpy * (1 + marginDec);
             marginHtml += `
                 <div class="margin-item">
                     <span class="margin-pct">利益 ${pct}%</span>
@@ -240,10 +310,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const rate = rates[currency];
-        if (rate) {
-            // JPY = Local / Rate
-            const jpyResult = local / rate;
-            // JPY is usually rounded to whole number
+        const fee = shopeeFees[currency];
+        
+        if (rate && fee) {
+            const totalFeeDec = fee.commission + fee.transaction;
+            
+            // JPY Equivalent = (Local Price * (1 - TotalFee)) / Rate
+            // Calculates how much JPY you are LEFT WITH after Shopee takes their cut.
+            const jpyResult = (local * (1 - totalFeeDec)) / rate;
             targetElement.textContent = formatNumber(jpyResult, 0);
         }
     }

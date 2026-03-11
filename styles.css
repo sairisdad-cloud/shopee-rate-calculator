@@ -264,8 +264,72 @@ input[type=number] {
     appearance: none;
 }
 
-.main-input {
-    margin-bottom: 1rem;
+/* Cost Inputs Container */
+.cost-inputs-container {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.cost-header {
+    background: #f9fafb;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.cost-header:hover {
+    background: #f3f4f6;
+}
+
+.cost-header-title {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cost-header-value {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--text-main);
+}
+
+.toggle-icon {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.cost-inputs-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-top: 1px solid var(--border-color);
+    background: #ffffff;
+}
+
+@media (min-width: 640px) {
+    .cost-inputs-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (min-width: 1024px) {
+    .cost-inputs-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 /* Margin Calculator */
@@ -404,6 +468,36 @@ input[type=number] {
 .tooltip-target {
     cursor: help;
     border-bottom: 1px dotted var(--primary-color);
+}
+
+/* Fee Badges */
+.fee-badge {
+    display: inline-block;
+    background: #e5e7eb;
+    color: #4b5563;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    margin-left: 0.25rem;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.fee-badge.warning {
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fca5a5;
+}
+
+.country-margin-item.error {
+    color: #ef4444;
+    background: #fef2f2;
+    border-radius: 4px;
+    padding: 0 0.25rem;
+}
+
+.country-margin-item.error .margin-val {
+    color: #ef4444;
 }
 
 /* Local to JPY List */

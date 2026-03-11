@@ -332,6 +332,65 @@ input[type=number] {
     }
 }
 
+/* Customs Estimator */
+.customs-estimator {
+    grid-column: 1 / -1;
+    background: #fdf2f8; /* light pinkish for distinction */
+    border: 1px dashed #f9a8d4;
+    border-radius: var(--border-radius-sm);
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+}
+
+.estimator-header {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #be185d;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.estimator-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.est-btn {
+    background: #ffffff;
+    border: 1px solid #fbcfe8;
+    color: #9d174d;
+    padding: 0.35rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    flex: 1;
+    min-width: calc(33.333% - 0.5rem);
+    text-align: center;
+}
+
+.est-btn:hover {
+    background: #fdf2f8;
+    border-color: #f472b6;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.est-btn:active {
+    transform: translateY(0);
+}
+
+@media (min-width: 640px) {
+    .est-btn {
+        min-width: auto;
+        flex: none;
+    }
+}
+
 /* Margin Calculator */
 .margin-calculator {
     background: var(--primary-light);

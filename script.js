@@ -19,6 +19,16 @@ document.addEventListener('DOMContentLoaded', () => {
         TWD: { commission: 0.05, transaction: 0.02 } // 7%
     };
 
+    // Customs Rules (De Minimis & Worst-Case Tax)
+    const CUSTOMS_RULES = {
+        SGD: { threshold: 400, underTax: 0.09, overTax: 0.16 }, // 9% GST under, 16% over
+        MYR: { threshold: 500, underTax: 0.10, overTax: 0.25 }, // 10% LVG under, 25% over
+        THB: { threshold: 1500, underTax: 0.07, overTax: 0.27 }, // 7% VAT under, 27% over
+        TWD: { threshold: 2000, underTax: 0, overTax: 0.15 }, // 0% under, 15% over
+        PHP: { threshold: 10000, underTax: 0, overTax: 0.27 }, // 0% under, 27% over
+        VND: { threshold: 1000000, underTax: 0, overTax: 0.30 } // 0% under, 30% over
+    };
+
     // DOM Elements
     const elements = {
         loading: document.getElementById('loading-overlay'),
@@ -28,10 +38,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Base Cost Inputs
         costInputs: document.querySelectorAll('.base-cost-input'),
+        customsInput: document.getElementById('customs-fee-input'),
         totalBaseCostDisplay: document.getElementById('total-base-cost-display'),
         costHeader: document.getElementById('toggle-costs-btn'),
         costGrid: document.getElementById('cost-inputs-grid'),
         costToggleIcon: document.getElementById('cost-toggle-icon'),
+        
+        // Estimator Buttons
+        estimatorBtns: document.querySelectorAll('.est-btn'),
         
         marginGrid: document.getElementById('margin-grid'),
         rateTableBody: document.getElementById('rate-table-body'),
@@ -103,6 +117,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.costGrid.style.display = 'grid'; // reset to default grid
                 elements.costToggleIcon.classList.replace('fa-chevron-down', 'fa-chevron-up');
             }
+        });
+
+        // Customs Estimator logic
+        elements.estimatorBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const country = e.target.dataset.country;
+                estimateCustomsFee(country);
+            });
         });
 
         // Local input events
@@ -220,6 +242,60 @@ document.addEventListener('DOMContentLoaded', () => {
         
         elements.totalBaseCostDisplay.textContent = `¥${formatNumber(total, 0)}`;
         calculateJpyToLocal(total);
+    }
+    
+    function estimateCustomsFee(country) {
+        // Calculate total cost EXCEPT customs
+        let preCustomsTotal = 0;
+        elements.costInputs.forEach(input => {
+            if (input.id !== 'customs-fee-input') {
+                const val = parseFloat(input.value);
+                if (!isNaN(val) && val > 0) {
+                    preCustomsTotal += val;
+                }
+            }
+        });
+        
+        const rate = rates[country];
+        const rule = CUSTOMS_RULES[country];
+        
+        if (preCustomsTotal <= 0) {
+            elements.customsInput.value = 0;
+            calculateTotalBaseCost();
+            return;
+        }
+        
+        if (!rate || !rule) {
+            console.warn("Missing rate or rule for estimate");
+            return;
+        }
+
+        // Convert base cost to local currency to check threshold
+        const localValue = preCustomsTotal * rate;
+        let taxRateToApply = 0;
+        
+        if (localValue > rule.threshold) {
+             taxRateToApply = rule.overTax;
+        } else {
+             taxRateToApply = rule.underTax;
+        }
+        
+        if (taxRateToApply > 0) {
+            // Calculate tax in JPY
+            const estimatedTaxJpy = preCustomsTotal * taxRateToApply;
+            elements.customsInput.value = Math.ceil(estimatedTaxJpy); // Round up for safety
+        } else {
+            elements.customsInput.value = 0;
+        }
+        
+        // Trigger re-calculation of the whole UI
+        calculateTotalBaseCost();
+        
+        // Highlight the input briefly to show it changed
+        elements.customsInput.style.backgroundColor = '#fdf2f8';
+        setTimeout(() => {
+            elements.customsInput.style.backgroundColor = '';
+        }, 500);
     }
 
     function calculateJpyToLocal(jpyValue) {
